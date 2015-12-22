@@ -19,35 +19,57 @@ object Application extends Controller {
   }
 
   def mongodbinfo = Action {
-    val db = new MongoDB()
-    db.dotest()
+    val futureList = MongoDB.dotest()
+    futureList.map { list =>
+      list.foreach { doc =>
+        println(s"found document: ${BSONDocument pretty doc}")
+      }
+    }
+    println("-------------")
     Ok(views.html.temp1("Your new application is ready."))
   }
 
 }
 
-class MongoDB {
+object MongoDB {
 
-  def dotest() {
+  var isConnected = false
+
+  def dotest():Future[List[BSONDocument]] = {
+
+    if (isConnected)
+      return null
+
     // gets an instance of the driver
     // (creates an actor system)
     val driver = new MongoDriver
     val connection = driver.connection(List("localhost:27017"))
-
     // Gets a reference to the database "plugin"
     val db = connection("local")
-
     // Gets a reference to the collection "acoll"
     // By default, you get a BSONCollection.
     val collection:BSONCollection = db("oems")
-    val filter = BSONDocument("bundleDisplayName" -> 1, "targetName" -> 1)
+    // Select only the documents which field 'bundleId' equals 'com.handpay.hx.ghtx'
     val query = BSONDocument("bundleId" -> "com.handpay.hx.ghtx")
+    // select only the fields 'lastName' and '_id'
+    val filter = BSONDocument("bundleDisplayName" -> 1, "targetName" -> 1)
+    // excute search in back ground:
     var result:BSONDocument = null
-    collection.find(query, filter).cursor[BSONDocument].enumerate().apply(Iteratee.foreach { doc =>
-      result = doc
-      println(s"found document: ${BSONDocument pretty doc}")
-    })
-    println(s"--------${result}")
+//    collection.find(query, filter).cursor[BSONDocument].enumerate().apply(Iteratee.foreach { doc =>
+//      result = doc
+//      println(s"found document: ${BSONDocument pretty doc}")
+//    })
+//    println(s"--------${result}")
+//    isConnected = true
+
+    // excute search in sync model
+    val futureList: Future[List[BSONDocument]] =
+      collection.
+        find(query, filter).
+        cursor[BSONDocument].
+        collect[List]()
+
+    return futureList
   }
 
 }
