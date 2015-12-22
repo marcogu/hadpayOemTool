@@ -5,7 +5,8 @@ import play.api.mvc._
 
 import reactivemongo.api._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
 
 import play.api.libs.iteratee.Iteratee
 
@@ -20,13 +21,13 @@ object Application extends Controller {
 
   def mongodbinfo = Action {
     val futureList = MongoDB.dotest()
-    futureList.map { list =>
-      list.foreach { doc =>
-        println(s"found document: ${BSONDocument pretty doc}")
-      }
+    val resultContent = Await.result(futureList, Duration.Inf)
+    var responseContent = ""
+    resultContent foreach { doc =>
+      responseContent = s"found document: ${BSONDocument pretty doc}"
+      println(s"found document: ${BSONDocument pretty doc}")
     }
-    println("-------------")
-    Ok(views.html.temp1("Your new application is ready."))
+    Ok(views.html.temp1(responseContent))
   }
 
 }
@@ -55,12 +56,6 @@ object MongoDB {
     val filter = BSONDocument("bundleDisplayName" -> 1, "targetName" -> 1)
     // excute search in back ground:
     var result:BSONDocument = null
-//    collection.find(query, filter).cursor[BSONDocument].enumerate().apply(Iteratee.foreach { doc =>
-//      result = doc
-//      println(s"found document: ${BSONDocument pretty doc}")
-//    })
-//    println(s"--------${result}")
-//    isConnected = true
 
     // excute search in sync model
     val futureList: Future[List[BSONDocument]] =
