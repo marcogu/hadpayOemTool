@@ -13,6 +13,8 @@ import play.api.libs.iteratee.Iteratee
 import reactivemongo.bson.BSONDocument
 import reactivemongo.api.collections.bson.BSONCollection
 
+//import play.api.mvc.Action._
+
 object Application extends Controller {
 
   def index = Action {
@@ -28,6 +30,17 @@ object Application extends Controller {
       println(s"found document: ${BSONDocument pretty doc}")
     }
     Ok(views.html.temp1(responseContent))
+  }
+
+  def aysncTest = Action.async { implicit request =>
+    val futureList = MongoDB.dotest()
+    var responseContent = ""
+
+    futureList.map { list =>
+      val doc:BSONDocument = list(0)
+      responseContent = s"found document: ${BSONDocument pretty doc}"
+      Ok(views.html.temp1(responseContent))
+    }
   }
 
 }
