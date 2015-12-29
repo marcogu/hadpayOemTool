@@ -64,9 +64,10 @@ object MongoDB {
     // By default, you get a BSONCollection.
     val collection:BSONCollection = db("oems")
     // Select only the documents which field 'bundleId' equals 'com.handpay.hx.ghtx'
-    val query = BSONDocument("bundleId" -> "com.handpay.hx.ghtx")
+    val query = BSONDocument("appId" -> "com.handpay.hx.ag")
     // select only the fields 'lastName' and '_id'
-    val filter = BSONDocument("bundleDisplayName" -> 1, "targetName" -> 1)
+    //    val filter = BSONDocument("resources" -> 1, "repoId" -> 1)
+    val filter = BSONDocument()
     // excute search in back ground:
     var result:BSONDocument = null
 
