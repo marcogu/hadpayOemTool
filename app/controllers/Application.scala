@@ -15,7 +15,7 @@ import reactivemongo.api.collections.bson.BSONCollection
 
 //import play.api.mvc.Action._
 
-object Application extends Controller {
+class Application extends Controller {
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -75,7 +75,7 @@ object MongoDB {
     val futureList: Future[List[BSONDocument]] =
       collection.
         find(query, filter).
-        cursor[BSONDocument].
+        cursor[BSONDocument]().
         collect[List]()
 
     return futureList
